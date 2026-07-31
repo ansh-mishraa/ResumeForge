@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { AuthService } from '../services/authService.js';
 import { UnauthorizedError } from '../types/errors.js';
-import type { AuthedRequest } from '../types/auth.js';
+import { asAuthed } from '../types/auth.js';
 import { sendErrorResponse } from '../utils/errorResponse.js';
 
 function extractToken(req: Request): string | null {
@@ -20,7 +20,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     const token = extractToken(req);
     if (!token) throw new UnauthorizedError();
     const user = AuthService.verifyToken(token);
-    (req as AuthedRequest).user = user;
+    asAuthed(req).user = user;
     return next();
   } catch (error) {
     return sendErrorResponse(res, error);

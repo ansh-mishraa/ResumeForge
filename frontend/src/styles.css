@@ -349,14 +349,29 @@ label.is-disabled {
   border-color: rgba(255, 143, 122, 0.35);
 }
 
+.qa-group {
+  margin-bottom: 8px;
+}
+
+.qa-group + .qa-group {
+  margin-top: 20px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.qa-group-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+}
+
 .qa-item {
   border-top: 1px solid var(--line);
   padding: 16px 0;
 }
 
-.qa-item:first-child {
+.qa-group .qa-item:first-of-type {
   border-top: 0;
-  padding-top: 0;
+  padding-top: 4px;
 }
 
 .qa-skill {
@@ -365,6 +380,13 @@ label.is-disabled {
   margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.qa-prune .qa-skill {
+  color: var(--warn);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.85rem;
 }
 
 .qa-controls {
@@ -387,6 +409,12 @@ label.is-disabled {
   background: var(--accent);
   color: var(--accent-ink);
   border-color: transparent;
+}
+
+.choice.active.danger {
+  background: rgba(255, 143, 122, 0.2);
+  color: var(--danger);
+  border-color: rgba(255, 143, 122, 0.45);
 }
 
 .latex-box {

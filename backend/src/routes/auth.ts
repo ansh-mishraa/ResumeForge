@@ -8,7 +8,7 @@ import {
 } from '../middleware/auth.js';
 import { sendErrorResponse, sendSuccessResponse } from '../utils/errorResponse.js';
 import { ValidationError } from '../types/errors.js';
-import type { AuthedRequest } from '../types/auth.js';
+import { asAuthed } from '../types/auth.js';
 
 export const authRouter = Router();
 
@@ -60,7 +60,7 @@ authRouter.post('/logout', (_req, res) => {
 
 authRouter.get('/me', requireAuth, async (req, res) => {
   try {
-    const user = await AuthService.getUserById((req as AuthedRequest).user.id);
+    const user = await AuthService.getUserById(asAuthed(req).user.id);
     return sendSuccessResponse(res, { user });
   } catch (error) {
     return sendErrorResponse(res, error);

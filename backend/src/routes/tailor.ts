@@ -6,7 +6,7 @@ import { TailorOrchestrator } from '../services/tailorOrchestrator.js';
 import { sendErrorResponse, sendSuccessResponse } from '../utils/errorResponse.js';
 import { NotFoundError, ValidationError } from '../types/errors.js';
 import { requireAuth } from '../middleware/auth.js';
-import type { AuthedRequest } from '../types/auth.js';
+import { asAuthed } from '../types/auth.js';
 
 export const tailorRouter = Router();
 tailorRouter.use(requireAuth);
@@ -16,7 +16,7 @@ tailorRouter.get('/sessions', async (req, res) => {
     const profileId =
       typeof req.query.profileId === 'string' ? req.query.profileId : undefined;
     const sessions = await TailorOrchestrator.listSessions(
-      (req as AuthedRequest).user.id,
+      asAuthed(req).user.id,
       profileId
     );
     return sendSuccessResponse(res, sessions);
@@ -28,7 +28,7 @@ tailorRouter.get('/sessions', async (req, res) => {
 tailorRouter.get('/sessions/:id', async (req, res) => {
   try {
     const session = await TailorOrchestrator.getSession(
-      (req as AuthedRequest).user.id,
+      asAuthed(req).user.id,
       req.params.id
     );
     return sendSuccessResponse(res, session);
@@ -45,7 +45,7 @@ tailorRouter.post('/sessions', async (req, res) => {
     });
     const body = schema.parse(req.body);
     const session = await TailorOrchestrator.startSession(
-      (req as AuthedRequest).user.id,
+      asAuthed(req).user.id,
       body.profileId,
       body.jobDescription
     );
@@ -65,6 +65,7 @@ tailorRouter.post('/sessions/:id/answers', async (req, res) => {
         z.object({
           questionId: z.string(),
           skill: z.string(),
+          kind: z.enum(['gap', 'prune']).optional(),
           hasSkill: z.boolean(),
           details: z.string().optional(),
         })
@@ -72,7 +73,7 @@ tailorRouter.post('/sessions/:id/answers', async (req, res) => {
     });
     const body = schema.parse(req.body);
     const session = await TailorOrchestrator.submitAnswers(
-      (req as AuthedRequest).user.id,
+      asAuthed(req).user.id,
       req.params.id,
       body.answers
     );
@@ -88,7 +89,7 @@ tailorRouter.post('/sessions/:id/answers', async (req, res) => {
 tailorRouter.post('/sessions/:id/fit-page', async (req, res) => {
   try {
     const session = await TailorOrchestrator.fitToSinglePageSpacingOnly(
-      (req as AuthedRequest).user.id,
+      asAuthed(req).user.id,
       req.params.id
     );
     return sendSuccessResponse(res, session);
@@ -100,7 +101,7 @@ tailorRouter.post('/sessions/:id/fit-page', async (req, res) => {
 tailorRouter.get('/sessions/:id/latex', async (req, res) => {
   try {
     const session = await TailorOrchestrator.getSession(
-      (req as AuthedRequest).user.id,
+      asAuthed(req).user.id,
       req.params.id
     );
     if (!session.latexCode) throw new NotFoundError('LaTeX not ready yet');
@@ -118,7 +119,7 @@ tailorRouter.get('/sessions/:id/latex', async (req, res) => {
 tailorRouter.get('/sessions/:id/pdf', async (req, res) => {
   try {
     const session = await TailorOrchestrator.getSession(
-      (req as AuthedRequest).user.id,
+      asAuthed(req).user.id,
       req.params.id
     );
     if (!session.pdfPath || !fs.existsSync(String(session.pdfPath))) {

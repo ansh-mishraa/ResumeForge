@@ -78,16 +78,27 @@ export interface FitAssessment {
   missingCritical: string[];
 }
 
+export type ClarifyingKind = 'gap' | 'prune';
+
 export interface ClarifyingQuestion {
   id: string;
+  /** gap = missing JD skill; prune = resume skill that may be off-role */
+  kind: ClarifyingKind;
   skill: string;
   importance: 'must' | 'nice';
   question: string;
+  /** Why this skill looks off-JD (prune only) */
+  reason?: string;
 }
 
 export interface UserAnswer {
   questionId: string;
   skill: string;
+  kind?: ClarifyingKind;
+  /**
+   * gap: true = candidate has the skill; false = does not.
+   * prune: true = keep on tailored resume; false = remove.
+   */
   hasSkill: boolean;
   details?: string;
 }

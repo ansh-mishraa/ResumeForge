@@ -8,7 +8,7 @@ import { sendErrorResponse, sendSuccessResponse } from '../utils/errorResponse.j
 import { ValidationError } from '../types/errors.js';
 import type { MasterProfile } from '../types/profile.js';
 import { requireAuth } from '../middleware/auth.js';
-import type { AuthedRequest } from '../types/auth.js';
+import { asAuthed } from '../types/auth.js';
 
 const uploadDir = path.resolve('uploads');
 fs.mkdirSync(uploadDir, { recursive: true });
@@ -23,7 +23,7 @@ profileRouter.use(requireAuth);
 
 profileRouter.get('/', async (req, res) => {
   try {
-    const profiles = await ProfileService.list((req as AuthedRequest).user.id);
+    const profiles = await ProfileService.list(asAuthed(req).user.id);
     return sendSuccessResponse(res, profiles);
   } catch (error) {
     return sendErrorResponse(res, error);
@@ -33,7 +33,7 @@ profileRouter.get('/', async (req, res) => {
 profileRouter.get('/:id', async (req, res) => {
   try {
     const profile = await ProfileService.getById(
-      (req as AuthedRequest).user.id,
+      asAuthed(req).user.id,
       req.params.id
     );
     return sendSuccessResponse(res, profile);
@@ -50,7 +50,7 @@ profileRouter.post('/text', async (req, res) => {
     });
     const body = schema.parse(req.body);
     const profile = await ProfileService.createFromText(
-      (req as AuthedRequest).user.id,
+      asAuthed(req).user.id,
       body.resumeText,
       body.label
     );
@@ -83,7 +83,7 @@ profileRouter.post(
         typeof req.body?.label === 'string' ? req.body.label : '';
 
       const profile = await ProfileService.createFromFile(
-        (req as AuthedRequest).user.id,
+        asAuthed(req).user.id,
         req.file.path,
         req.file.mimetype,
         req.file.originalname,
@@ -109,7 +109,7 @@ profileRouter.patch('/:id/label', async (req, res) => {
     const schema = z.object({ label: z.string().min(2).max(80) });
     const body = schema.parse(req.body);
     const profile = await ProfileService.rename(
-      (req as AuthedRequest).user.id,
+      asAuthed(req).user.id,
       req.params.id,
       body.label
     );
@@ -127,7 +127,7 @@ profileRouter.put('/:id', async (req, res) => {
     const data = req.body as MasterProfile;
     if (!data?.contact?.name) throw new ValidationError('Invalid profile payload');
     const profile = await ProfileService.updateData(
-      (req as AuthedRequest).user.id,
+      asAuthed(req).user.id,
       req.params.id,
       data
     );
@@ -139,7 +139,7 @@ profileRouter.put('/:id', async (req, res) => {
 
 profileRouter.delete('/:id', async (req, res) => {
   try {
-    await ProfileService.delete((req as AuthedRequest).user.id, req.params.id);
+    await ProfileService.delete(asAuthed(req).user.id, req.params.id);
     return sendSuccessResponse(res, { deleted: true });
   } catch (error) {
     return sendErrorResponse(res, error);

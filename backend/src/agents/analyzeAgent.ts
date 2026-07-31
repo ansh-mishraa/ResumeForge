@@ -18,7 +18,15 @@ export async function analyzeJobDescription(
 ): Promise<JdAnalysis> {
   return chatJson({
     system: `You are an expert ATS and technical recruiter. Extract structured hiring requirements from a job description.
+
 Return JSON only with keys: jobTitle, company, seniority, mustHaveSkills, niceToHaveSkills, keywords, responsibilities, domain.
+
+Guidelines:
+- mustHaveSkills: hard requirements a strong candidate should have.
+- niceToHaveSkills: secondary stack items.
+- keywords: ATS phrases / tools / frameworks / methodologies to mirror on a resume (include synonyms recruiters search).
+- responsibilities: concrete duties (useful for XYZ bullet targeting).
+- domain: e.g. "Android mobile", "backend platform", "data engineering".
 mustHaveSkills / niceToHaveSkills / keywords / responsibilities must be string arrays.`,
     user: `Job description:\n\n${jobDescription}`,
     schema: analysisSchema,

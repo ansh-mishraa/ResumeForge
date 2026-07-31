@@ -148,14 +148,29 @@ export class TailorOrchestrator {
       responsibilities: [],
     };
 
-    const fit = await assessFit(master, analysisObj, answers);
+    const qById = new Map(
+      ((session.clarifyingQs as ClarifyingQuestion[] | null) || []).map((q) => [
+        q.id,
+        q,
+      ])
+    );
+    const normalizedAnswers: UserAnswer[] = answers.map((a) => {
+      const q = qById.get(a.questionId);
+      return {
+        ...a,
+        kind: a.kind ?? q?.kind ?? 'gap',
+        skill: a.skill || q?.skill || a.skill,
+      };
+    });
+
+    const fit = await assessFit(master, analysisObj, normalizedAnswers);
 
     if (fit.decision === 'deny') {
       const denied = await prisma.tailorSession.update({
         where: { id: sessionId },
         data: {
           status: 'DENIED',
-          userAnswers: toJson(answers),
+          userAnswers: toJson(normalizedAnswers),
           fitScore: fit.score,
           fitReason: fit.reason,
         },
@@ -166,14 +181,14 @@ export class TailorOrchestrator {
     await prisma.tailorSession.update({
       where: { id: sessionId },
       data: {
-        userAnswers: toJson(answers),
+        userAnswers: toJson(normalizedAnswers),
         fitScore: fit.score,
         fitReason: fit.reason,
         status: 'TAILORING',
       },
     });
 
-    return this.completeTailoring(userId, sessionId, answers);
+    return this.completeTailoring(userId, sessionId, normalizedAnswers);
   }
 
   static async completeTailoring(

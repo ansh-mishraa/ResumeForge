@@ -42,9 +42,11 @@ export interface ProfileSummary {
 
 export interface ClarifyingQuestion {
   id: string;
+  kind?: 'gap' | 'prune';
   skill: string;
   importance: 'must' | 'nice';
   question: string;
+  reason?: string;
 }
 
 export interface SessionSummary {
@@ -225,6 +227,7 @@ export async function submitAnswers(
   answers: {
     questionId: string;
     skill: string;
+    kind?: 'gap' | 'prune';
     hasSkill: boolean;
     details?: string;
   }[]
