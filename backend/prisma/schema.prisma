@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String          @id @default(uuid())
+  email        String          @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  profiles     Profile[]
+  sessions     TailorSession[]
+}
+
+model Profile {
+  id        String          @id @default(uuid())
+  userId    String?
+  user      User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// User-chosen nickname for this stored resume version
+  label     String          @default("Untitled resume")
+  name      String
+  email     String?
+  phone     String?
+  location  String?
+  linkedin  String?
+  github    String?
+  website   String?
+  summary   String?
+  rawResume String?
+  data      String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  sessions  TailorSession[]
+
+  @@index([userId])
+}
+
+model TailorSession {
+  id               String   @id @default(uuid())
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profileId        String
+  profile          Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  jobTitle         String?
+  company          String?
+  jobDescription   String
+  status           String   @default("ANALYZING")
+  analysis         String?
+  fitScore         Float?
+  fitReason        String?
+  clarifyingQs     String?
+  userAnswers      String?
+  tailoredContent  String?
+  latexCode        String?
+  pdfPath          String?
+  atsScore         Float?
+  pageOptimization String?
+  errorMessage     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([userId])
+}
